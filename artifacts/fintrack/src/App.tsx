@@ -1,5 +1,4 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from '@/components/ui/toast';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import Dashboard from '@/pages/Dashboard';
@@ -9,7 +8,13 @@ import Projects from '@/pages/Projects';
 import ProjectDetail from '@/pages/ProjectDetail';
 import Tasks from '@/pages/Tasks';
 import Members from '@/pages/Members';
-import { Route, Switch, Router as WouterRouter } from 'wouter';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import AdminUsers from '@/pages/admin/Users';
+import ActivityLog from '@/pages/admin/ActivityLog';
+import { Route, Switch, Router as WouterRouter, Redirect, useLocation } from 'wouter';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { Toaster } from 'sonner';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,16 +25,87 @@ const queryClient = new QueryClient({
   },
 });
 
+function ProtectedRoute({
+  component: Component,
+  adminOnly = false,
+}: {
+  component: React.ComponentType;
+  adminOnly?: boolean;
+}) {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0f172a' }}>
+        <div className="h-8 w-8 rounded-full border-2 border-green-500 border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Redirect to="/login" />;
+  }
+
+  if (adminOnly && user.role !== 'admin') {
+    return <Redirect to="/dashboard" />;
+  }
+
+  return <Component />;
+}
+
 function Router() {
+  const { user, isLoading } = useAuth();
+
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/portfolios" component={Portfolios} />
-      <Route path="/portfolios/:id" component={PortfolioDetail} />
-      <Route path="/projects" component={Projects} />
-      <Route path="/projects/:id" component={ProjectDetail} />
-      <Route path="/tasks" component={Tasks} />
-      <Route path="/members" component={Members} />
+      {/* Public routes */}
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
+
+      {/* Root redirect */}
+      <Route path="/">
+        {isLoading ? (
+          <div className="min-h-screen flex items-center justify-center" style={{ background: '#0f172a' }}>
+            <div className="h-8 w-8 rounded-full border-2 border-green-500 border-t-transparent animate-spin" />
+          </div>
+        ) : user ? (
+          <Redirect to="/dashboard" />
+        ) : (
+          <Redirect to="/login" />
+        )}
+      </Route>
+
+      {/* Protected routes */}
+      <Route path="/dashboard">
+        <ProtectedRoute component={Dashboard} />
+      </Route>
+      <Route path="/portfolios">
+        <ProtectedRoute component={Portfolios} />
+      </Route>
+      <Route path="/portfolios/:id">
+        <ProtectedRoute component={PortfolioDetail} />
+      </Route>
+      <Route path="/projects">
+        <ProtectedRoute component={Projects} />
+      </Route>
+      <Route path="/projects/:id">
+        <ProtectedRoute component={ProjectDetail} />
+      </Route>
+      <Route path="/tasks">
+        <ProtectedRoute component={Tasks} />
+      </Route>
+      <Route path="/members">
+        <ProtectedRoute component={Members} />
+      </Route>
+
+      {/* Admin-only routes */}
+      <Route path="/admin">
+        <ProtectedRoute component={AdminUsers} adminOnly />
+      </Route>
+      <Route path="/admin/activity">
+        <ProtectedRoute component={ActivityLog} adminOnly />
+      </Route>
+
       <Route component={NotFound} />
     </Switch>
   );
@@ -38,12 +114,14 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-          <Router />
-        </WouterRouter>
-        {/* We would render Toaster here if we fully implemented use-toast, but we will leave it simple for now */}
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+            <Router />
+          </WouterRouter>
+          <Toaster position="top-right" richColors />
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

@@ -1,4 +1,5 @@
 import { Shell } from "@/components/layout/Shell"
+import { PageTransition } from "@/components/layout/PageTransition"
 import { useGetPortfolio, getGetPortfolioQueryKey, useListHoldings, getListHoldingsQueryKey, useListTransactions, getListTransactionsQueryKey, useCreateHolding, useCreateTransaction, useDeleteHolding, useDeleteTransaction, useUpdatePortfolio } from "@workspace/api-client-react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -131,6 +132,7 @@ export default function PortfolioDetail() {
 
   return (
     <Shell>
+      <PageTransition>
       <div className="flex flex-col gap-6">
         <div>
           <Link href="/portfolios" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-4">
@@ -413,6 +415,7 @@ export default function PortfolioDetail() {
           </TabsContent>
         </Tabs>
       </div>
+      </PageTransition>
     </Shell>
   )
 }

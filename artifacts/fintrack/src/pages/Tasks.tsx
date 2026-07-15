@@ -1,4 +1,5 @@
 import { Shell } from "@/components/layout/Shell"
+import { PageTransition } from "@/components/layout/PageTransition"
 import { useListAllTasks, getListAllTasksQueryKey, useUpdateTask } from "@workspace/api-client-react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Card, CardContent } from "@/components/ui/card"
@@ -37,6 +38,7 @@ export default function Tasks() {
 
   return (
     <Shell>
+      <PageTransition>
       <div className="flex flex-col gap-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">All Tasks</h1>
@@ -116,6 +118,7 @@ export default function Tasks() {
           )}
         </Card>
       </div>
+      </PageTransition>
     </Shell>
   )
 }

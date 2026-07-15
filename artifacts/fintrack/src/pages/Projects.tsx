@@ -1,4 +1,5 @@
 import { Shell } from "@/components/layout/Shell"
+import { PageTransition } from "@/components/layout/PageTransition"
 import { useListProjects, useCreateProject, getListProjectsQueryKey } from "@workspace/api-client-react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
@@ -61,6 +62,7 @@ export default function Projects() {
 
   return (
     <Shell>
+      <PageTransition>
       <div className="flex flex-col gap-8">
         <div className="flex justify-between items-end">
           <div>
@@ -228,6 +230,7 @@ export default function Projects() {
           </div>
         )}
       </div>
+      </PageTransition>
     </Shell>
   )
 }

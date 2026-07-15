@@ -1,4 +1,5 @@
 import { Shell } from "@/components/layout/Shell"
+import { PageTransition } from "@/components/layout/PageTransition"
 import { useListPortfolios, useCreatePortfolio, getListPortfoliosQueryKey } from "@workspace/api-client-react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -47,6 +48,7 @@ export default function Portfolios() {
 
   return (
     <Shell>
+      <PageTransition>
       <div className="flex flex-col gap-8">
         <div className="flex justify-between items-end">
           <div>
@@ -180,6 +182,7 @@ export default function Portfolios() {
           </div>
         )}
       </div>
+      </PageTransition>
     </Shell>
   )
 }

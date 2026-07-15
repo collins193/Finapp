@@ -1,10 +1,11 @@
 import { Shell } from "@/components/layout/Shell"
+import { PageTransition } from "@/components/layout/PageTransition"
 import { useGetProject, getGetProjectQueryKey, useListTasks, getListTasksQueryKey, useCreateTask, useUpdateTask, useDeleteTask, useListMembers, getListMembersQueryKey } from "@workspace/api-client-react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus, ArrowLeft, MoreVertical, Calendar, Clock, Trash } from "lucide-react"
-import { Link, useParams, useLocation } from "wouter"
+import { Link, useParams, useLocation, useRouter } from "wouter"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -30,6 +31,7 @@ const COLUMNS = [
 export default function ProjectDetail() {
   const { id } = useParams()
   const projectId = Number(id)
+  const [, setLocation] = useLocation()
   const queryClient = useQueryClient()
   
   const { data: project, isLoading: loadingProject } = useGetProject(projectId, {
@@ -122,6 +124,7 @@ export default function ProjectDetail() {
 
   return (
     <Shell>
+      <PageTransition>
       <div className="flex flex-col h-full gap-6">
         <div>
           <Link href="/projects" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-4">
@@ -304,6 +307,7 @@ export default function ProjectDetail() {
           </div>
         </div>
       </div>
+      </PageTransition>
     </Shell>
   )
 }

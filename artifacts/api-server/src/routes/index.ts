@@ -7,10 +7,14 @@ import projectsRouter from "./projects";
 import tasksRouter from "./tasks";
 import membersRouter from "./members";
 import dashboardRouter from "./dashboard";
+import authRouter from "./auth";
+import adminRouter from "./admin";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(authRouter);
+router.use(adminRouter);
 router.use(portfoliosRouter);
 router.use(holdingsRouter);
 router.use(transactionsRouter);

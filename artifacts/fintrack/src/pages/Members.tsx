@@ -1,4 +1,5 @@
 import { Shell } from "@/components/layout/Shell"
+import { PageTransition } from "@/components/layout/PageTransition"
 import { useListMembers, useCreateMember, getListMembersQueryKey } from "@workspace/api-client-react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -45,6 +46,7 @@ export default function Members() {
 
   return (
     <Shell>
+      <PageTransition>
       <div className="flex flex-col gap-8">
         <div className="flex justify-between items-end">
           <div>
@@ -164,6 +166,7 @@ export default function Members() {
           </div>
         )}
       </div>
+      </PageTransition>
     </Shell>
   )
 }
