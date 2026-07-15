@@ -3,13 +3,28 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: FinTrack API — investment portfolio management and project task tracking
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: portfolios
+    description: Investment portfolio management
+  - name: holdings
+    description: Individual investment holdings
+  - name: transactions
+    description: Investment transactions
+  - name: projects
+    description: Project management
+  - name: tasks
+    description: Task management within projects
+  - name: members
+    description: Team members and owners
+  - name: dashboard
+    description: Dashboard summaries and analytics
+
 paths:
   /healthz:
     get:
@@ -24,6 +39,560 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ── Portfolios ──────────────────────────────────────────────────────────────
+  /portfolios:
+    get:
+      operationId: listPortfolios
+      tags: [portfolios]
+      summary: List all portfolios
+      responses:
+        "200":
+          description: List of portfolios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Portfolio"
+    post:
+      operationId: createPortfolio
+      tags: [portfolios]
+      summary: Create a portfolio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortfolioInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Portfolio"
+
+  /portfolios/{id}:
+    get:
+      operationId: getPortfolio
+      tags: [portfolios]
+      summary: Get a portfolio
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Portfolio
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Portfolio"
+        "404":
+          description: Not found
+    patch:
+      operationId: updatePortfolio
+      tags: [portfolios]
+      summary: Update a portfolio
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortfolioUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Portfolio"
+    delete:
+      operationId: deletePortfolio
+      tags: [portfolios]
+      summary: Delete a portfolio
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Holdings ────────────────────────────────────────────────────────────────
+  /portfolios/{portfolioId}/holdings:
+    get:
+      operationId: listHoldings
+      tags: [holdings]
+      summary: List holdings in a portfolio
+      parameters:
+        - name: portfolioId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Holdings list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Holding"
+    post:
+      operationId: createHolding
+      tags: [holdings]
+      summary: Add a holding to a portfolio
+      parameters:
+        - name: portfolioId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HoldingInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Holding"
+
+  /holdings/{id}:
+    patch:
+      operationId: updateHolding
+      tags: [holdings]
+      summary: Update a holding
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HoldingUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Holding"
+    delete:
+      operationId: deleteHolding
+      tags: [holdings]
+      summary: Delete a holding
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Transactions ─────────────────────────────────────────────────────────
+  /portfolios/{portfolioId}/transactions:
+    get:
+      operationId: listTransactions
+      tags: [transactions]
+      summary: List transactions in a portfolio
+      parameters:
+        - name: portfolioId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Transactions list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+    post:
+      operationId: createTransaction
+      tags: [transactions]
+      summary: Log a transaction
+      parameters:
+        - name: portfolioId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+
+  /transactions/{id}:
+    delete:
+      operationId: deleteTransaction
+      tags: [transactions]
+      summary: Delete a transaction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Projects ──────────────────────────────────────────────────────────────
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List all projects
+      responses:
+        "200":
+          description: Projects list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Create a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /projects/{id}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get a project with its tasks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      summary: Update a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+    delete:
+      operationId: deleteProject
+      tags: [projects]
+      summary: Delete a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Tasks ─────────────────────────────────────────────────────────────────
+  /projects/{projectId}/tasks:
+    get:
+      operationId: listTasks
+      tags: [tasks]
+      summary: List tasks in a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Tasks list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+    post:
+      operationId: createTask
+      tags: [tasks]
+      summary: Create a task in a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  /tasks:
+    get:
+      operationId: listAllTasks
+      tags: [tasks]
+      summary: List all tasks across all projects
+      responses:
+        "200":
+          description: All tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+
+  /tasks/{id}:
+    get:
+      operationId: getTask
+      tags: [tasks]
+      summary: Get a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateTask
+      tags: [tasks]
+      summary: Update a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+    delete:
+      operationId: deleteTask
+      tags: [tasks]
+      summary: Delete a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Members ───────────────────────────────────────────────────────────────
+  /members:
+    get:
+      operationId: listMembers
+      tags: [members]
+      summary: List all team members
+      responses:
+        "200":
+          description: Members list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Member"
+    post:
+      operationId: createMember
+      tags: [members]
+      summary: Create a team member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Member"
+
+  /members/{id}:
+    patch:
+      operationId: updateMember
+      tags: [members]
+      summary: Update a team member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Member"
+    delete:
+      operationId: deleteMember
+      tags: [members]
+      summary: Delete a team member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Dashboard ─────────────────────────────────────────────────────────────
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get overall dashboard summary (portfolio totals + task stats)
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent transactions and task updates
+      responses:
+        "200":
+          description: Recent activity feed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  /dashboard/task-breakdown:
+    get:
+      operationId: getTaskBreakdown
+      tags: [dashboard]
+      summary: Get task counts grouped by status and priority
+      responses:
+        "200":
+          description: Task breakdown stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskBreakdown"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +603,392 @@ components:
       required:
         - status
 
+    # ── Portfolio schemas ───────────────────────────────────────────────────
+    Portfolio:
+      type: object
+      required: [id, name, currency, totalValue, gainLoss, gainLossPercent, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        currency:
+          type: string
+        totalValue:
+          type: number
+        gainLoss:
+          type: number
+        gainLossPercent:
+          type: number
+        createdAt:
+          type: string
+
+    PortfolioInput:
+      type: object
+      required: [name, currency]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        currency:
+          type: string
+
+    PortfolioUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+
+    # ── Holding schemas ─────────────────────────────────────────────────────
+    Holding:
+      type: object
+      required: [id, portfolioId, ticker, name, assetType, quantity, avgCostBasis, currentPrice, marketValue, gainLoss, gainLossPercent, createdAt]
+      properties:
+        id:
+          type: integer
+        portfolioId:
+          type: integer
+        ticker:
+          type: string
+        name:
+          type: string
+        assetType:
+          type: string
+          enum: [stock, etf, crypto, bond, mutual_fund, other]
+        quantity:
+          type: number
+        avgCostBasis:
+          type: number
+        currentPrice:
+          type: number
+        marketValue:
+          type: number
+        gainLoss:
+          type: number
+        gainLossPercent:
+          type: number
+        createdAt:
+          type: string
+
+    HoldingInput:
+      type: object
+      required: [ticker, name, assetType, quantity, avgCostBasis, currentPrice]
+      properties:
+        ticker:
+          type: string
+          minLength: 1
+        name:
+          type: string
+          minLength: 1
+        assetType:
+          type: string
+          enum: [stock, etf, crypto, bond, mutual_fund, other]
+        quantity:
+          type: number
+        avgCostBasis:
+          type: number
+        currentPrice:
+          type: number
+
+    HoldingUpdate:
+      type: object
+      properties:
+        quantity:
+          type: number
+        avgCostBasis:
+          type: number
+        currentPrice:
+          type: number
+
+    # ── Transaction schemas ─────────────────────────────────────────────────
+    Transaction:
+      type: object
+      required: [id, portfolioId, ticker, type, quantity, price, total, transactedAt, createdAt]
+      properties:
+        id:
+          type: integer
+        portfolioId:
+          type: integer
+        ticker:
+          type: string
+        type:
+          type: string
+          enum: [buy, sell, dividend, deposit, withdrawal]
+        quantity:
+          type: number
+        price:
+          type: number
+        total:
+          type: number
+        notes:
+          type: ["string", "null"]
+        transactedAt:
+          type: string
+        createdAt:
+          type: string
+
+    TransactionInput:
+      type: object
+      required: [ticker, type, quantity, price, transactedAt]
+      properties:
+        ticker:
+          type: string
+          minLength: 1
+        type:
+          type: string
+          enum: [buy, sell, dividend, deposit, withdrawal]
+        quantity:
+          type: number
+        price:
+          type: number
+        notes:
+          type: string
+        transactedAt:
+          type: string
+
+    # ── Project schemas ─────────────────────────────────────────────────────
+    Project:
+      type: object
+      required: [id, name, status, progress, taskCount, completedCount, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [active, on_hold, completed, archived]
+        color:
+          type: ["string", "null"]
+        progress:
+          type: integer
+        taskCount:
+          type: integer
+        completedCount:
+          type: integer
+        dueDate:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    ProjectInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        status:
+          type: string
+          enum: [active, on_hold, completed, archived]
+        color:
+          type: string
+        dueDate:
+          type: string
+
+    ProjectUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        status:
+          type: string
+          enum: [active, on_hold, completed, archived]
+        color:
+          type: string
+        dueDate:
+          type: string
+
+    # ── Task schemas ────────────────────────────────────────────────────────
+    Task:
+      type: object
+      required: [id, projectId, title, status, priority, createdAt]
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        projectName:
+          type: ["string", "null"]
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [todo, in_progress, review, done]
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+        ownerId:
+          type: ["integer", "null"]
+        ownerName:
+          type: ["string", "null"]
+        ownerInitials:
+          type: ["string", "null"]
+        dueDate:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    TaskInput:
+      type: object
+      required: [title, status, priority]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        status:
+          type: string
+          enum: [todo, in_progress, review, done]
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+        ownerId:
+          type: integer
+        dueDate:
+          type: string
+
+    TaskUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        status:
+          type: string
+          enum: [todo, in_progress, review, done]
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+        ownerId:
+          type: ["integer", "null"]
+        dueDate:
+          type: ["string", "null"]
+
+    # ── Member schemas ──────────────────────────────────────────────────────
+    Member:
+      type: object
+      required: [id, name, initials, role, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        initials:
+          type: string
+        role:
+          type: string
+        email:
+          type: ["string", "null"]
+        avatarColor:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    MemberInput:
+      type: object
+      required: [name, role]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        role:
+          type: string
+          minLength: 1
+        email:
+          type: string
+        avatarColor:
+          type: string
+
+    MemberUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        role:
+          type: string
+          minLength: 1
+        email:
+          type: string
+        avatarColor:
+          type: string
+
+    # ── Dashboard schemas ───────────────────────────────────────────────────
+    DashboardSummary:
+      type: object
+      required: [totalPortfolioValue, totalGainLoss, totalGainLossPercent, portfolioCount, totalTasks, openTasks, overdueTasks, projectCount]
+      properties:
+        totalPortfolioValue:
+          type: number
+        totalGainLoss:
+          type: number
+        totalGainLossPercent:
+          type: number
+        portfolioCount:
+          type: integer
+        totalTasks:
+          type: integer
+        openTasks:
+          type: integer
+        overdueTasks:
+          type: integer
+        projectCount:
+          type: integer
+
+    ActivityItem:
+      type: object
+      required: [id, type, description, timestamp]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [transaction, task_created, task_updated, task_completed, project_created]
+        description:
+          type: string
+        meta:
+          type: ["string", "null"]
+        timestamp:
+          type: string
+
+    TaskBreakdown:
+      type: object
+      required: [byStatus, byPriority]
+      properties:
+        byStatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/BreakdownItem"
+        byPriority:
+          type: array
+          items:
+            $ref: "#/components/schemas/BreakdownItem"
+
+    BreakdownItem:
+      type: object
+      required: [label, count]
+      properties:
+        label:
+          type: string
+        count:
+          type: integer

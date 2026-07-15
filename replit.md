@@ -1,10 +1,11 @@
-# [Project name]
+# FinTrack
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A fintech web app combining investment portfolio management with project/task tracking. Used by investment teams to monitor portfolios, coordinate work, assign task owners, and track deadlines.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080, proxied at `/api`)
+- `pnpm --filter @workspace/fintrack run dev` — run the frontend (port 23162, proxied at `/`)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -14,23 +15,34 @@ _Replace the heading above with the project's name, and this line with one sente
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
+- Frontend: React + Vite, TanStack Query, Wouter, Tailwind CSS, Recharts, Framer Motion
 - API: Express 5
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
+- API codegen: Orval (from OpenAPI spec in `lib/api-spec/openapi.yaml`)
 - Build: esbuild (CJS bundle)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `lib/api-spec/openapi.yaml` — single source of truth for all API contracts
+- `lib/db/src/schema/` — Drizzle table definitions (portfolios, holdings, transactions, projects, tasks, members)
+- `artifacts/api-server/src/routes/` — Express route handlers (portfolios, holdings, transactions, projects, tasks, members, dashboard)
+- `artifacts/fintrack/src/` — React frontend with pages for dashboard, portfolios, projects, tasks, members
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Dashboard summary, recent activity, and task breakdown are computed server-side to avoid N+1 queries on the client.
+- Portfolio totalValue/gainLoss/gainLossPercent are computed at query time from holdings (not stored), so they always reflect current prices.
+- Project progress % is computed from done/total task counts.
+- Task enrichment (ownerName, ownerInitials, projectName) is resolved in route handlers before responding.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- **Dashboard**: Portfolio total value + gain/loss, open/overdue task counts, task breakdown by status/priority, recent activity feed
+- **Portfolios**: CRUD portfolios, manage holdings (ticker, quantity, cost basis, current price), log buy/sell/dividend transactions
+- **Projects**: Track projects with status, progress bar, due dates, task counts
+- **Tasks**: Full task management — assign owners, set deadlines, set priority (low/medium/high/urgent), update status (todo/in_progress/review/done), filterable across all projects
+- **Members**: Team members with roles, assignable to tasks
 
 ## User preferences
 
@@ -38,7 +50,8 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- After changing `lib/db/src/schema/`, run `pnpm run typecheck:libs` before typechecking api-server, otherwise `@workspace/db` exports appear stale.
+- After each OpenAPI spec change, re-run codegen before using the updated types.
 
 ## Pointers
 
