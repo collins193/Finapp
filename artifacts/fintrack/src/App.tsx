@@ -2,16 +2,17 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import Dashboard from '@/pages/Dashboard';
-import Portfolios from '@/pages/Portfolios';
-import PortfolioDetail from '@/pages/PortfolioDetail';
+import Crypto from '@/pages/Crypto';
+import CryptoDetail from '@/pages/CryptoDetail';
+import Payments from '@/pages/Payments';
 import Projects from '@/pages/Projects';
 import ProjectDetail from '@/pages/ProjectDetail';
-import Tasks from '@/pages/Tasks';
 import Members from '@/pages/Members';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import AdminUsers from '@/pages/admin/Users';
 import ActivityLog from '@/pages/admin/ActivityLog';
+import PaymentAddresses from '@/pages/admin/PaymentAddresses';
 import { Route, Switch, Router as WouterRouter, Redirect, useLocation } from 'wouter';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { Toaster } from 'sonner';
@@ -79,20 +80,20 @@ function Router() {
       <Route path="/dashboard">
         <ProtectedRoute component={Dashboard} />
       </Route>
-      <Route path="/portfolios">
-        <ProtectedRoute component={Portfolios} />
+      <Route path="/crypto/:coinId">
+        <ProtectedRoute component={CryptoDetail} />
       </Route>
-      <Route path="/portfolios/:id">
-        <ProtectedRoute component={PortfolioDetail} />
+      <Route path="/crypto">
+        <ProtectedRoute component={Crypto} />
+      </Route>
+      <Route path="/payments">
+        <ProtectedRoute component={Payments} />
       </Route>
       <Route path="/projects">
         <ProtectedRoute component={Projects} />
       </Route>
       <Route path="/projects/:id">
         <ProtectedRoute component={ProjectDetail} />
-      </Route>
-      <Route path="/tasks">
-        <ProtectedRoute component={Tasks} />
       </Route>
       <Route path="/members">
         <ProtectedRoute component={Members} />
@@ -104,6 +105,9 @@ function Router() {
       </Route>
       <Route path="/admin/activity">
         <ProtectedRoute component={ActivityLog} adminOnly />
+      </Route>
+      <Route path="/admin/payment-addresses">
+        <ProtectedRoute component={PaymentAddresses} adminOnly />
       </Route>
 
       <Route component={NotFound} />

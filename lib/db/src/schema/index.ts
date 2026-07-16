@@ -6,3 +6,4 @@ export * from "./tasks";
 export * from "./members";
 export * from "./users";
 export * from "./activityLogs";
+export * from "./paymentAddresses";

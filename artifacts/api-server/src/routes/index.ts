@@ -9,12 +9,16 @@ import membersRouter from "./members";
 import dashboardRouter from "./dashboard";
 import authRouter from "./auth";
 import adminRouter from "./admin";
+import cryptoRouter from "./crypto";
+import paymentAddressesRouter from "./paymentAddresses";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(authRouter);
 router.use(adminRouter);
+router.use(cryptoRouter);
+router.use(paymentAddressesRouter);
 router.use(portfoliosRouter);
 router.use(holdingsRouter);
 router.use(transactionsRouter);

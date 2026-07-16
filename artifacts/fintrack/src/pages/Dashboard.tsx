@@ -3,29 +3,40 @@ import { PageTransition } from "@/components/layout/PageTransition";
 import {
   useGetDashboardSummary,
   useGetRecentActivity,
-  useGetTaskBreakdown,
 } from "@workspace/api-client-react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency, formatPercent } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 // ActivityItem type inline
 interface ActivityItem { id: number; description: string; timestamp: string; meta?: string; };
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, useSpring, useTransform, useMotionValue } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
+import { Link } from "wouter";
+import { TrendingUp, CreditCard } from "lucide-react";
+
+const BASE = import.meta.env.BASE_URL;
+
+interface PaymentAddress {
+  id: number;
+  type: string;
+  address: string;
+  label: string;
+  updatedAt: string;
+}
 
 function AnimatedNumber({ value, prefix = "" }: { value: number; prefix?: string }) {
   const motionVal = useMotionValue(0);
   const spring = useSpring(motionVal, { stiffness: 120, damping: 25 });
   const display = useTransform(spring, (v) => `${prefix}${Math.round(v).toLocaleString()}`);
-  const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     motionVal.set(value);
   }, [value, motionVal]);
 
-  return <motion.span ref={ref}>{display}</motion.span>;
+  return <motion.span>{display}</motion.span>;
 }
 
 function AnimatedCurrency({ value }: { value: number }) {
@@ -60,11 +71,18 @@ export default function Dashboard() {
     query: { queryKey: ["dashboard-activity"] },
   });
 
-  const { data: tasks, isLoading: loadingTasks } = useGetTaskBreakdown({
-    query: { queryKey: ["dashboard-tasks"] },
+  const { data: paymentAddresses, isLoading: loadingPayments } = useQuery<PaymentAddress[]>({
+    queryKey: ["payment-addresses"],
+    queryFn: async () => {
+      const r = await fetch(`${BASE}api/payment-addresses`, { credentials: "include" });
+      if (!r.ok) throw new Error("Failed");
+      return r.json();
+    },
   });
 
   const { user } = useAuth();
+
+  const configuredPayments = paymentAddresses?.filter((a) => a.address && a.address.trim() !== "").length ?? 0;
 
   return (
     <Shell>
@@ -73,7 +91,7 @@ export default function Dashboard() {
           <div className="flex justify-between items-end">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-foreground">Command Center</h1>
-              <p className="text-muted-foreground mt-1">Your portfolio value and task overview.</p>
+              <p className="text-muted-foreground mt-1">Your portfolio overview and live market data.</p>
             </div>
           </div>
 
@@ -105,62 +123,14 @@ export default function Dashboard() {
                     >
                       {(summary?.totalGainLoss ?? 0) >= 0 ? "+" : ""}
                       {formatCurrency(summary?.totalGainLoss ?? 0)}
-                      <span className="text-slate-300 ml-1">
-                        ({(summary?.totalGainLossPercent ?? 0) >= 0 ? "+" : ""}
-                        {formatPercent(summary?.totalGainLossPercent ?? 0)})
-                      </span>
                     </div>
                   )}
                 </CardContent>
               </Card>
             </motion.div>
 
-            {/* Open Tasks */}
+            {/* Portfolios */}
             <motion.div custom={1} variants={cardVariants} initial="hidden" animate="show">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                    Open Tasks
-                  </CardDescription>
-                  <CardTitle className="text-3xl font-bold">
-                    {loadingSummary ? (
-                      <Skeleton className="h-8 w-16" />
-                    ) : (
-                      <AnimatedNumber value={summary?.openTasks ?? 0} />
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Across {summary?.projectCount ?? 0} active projects
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Overdue */}
-            <motion.div custom={2} variants={cardVariants} initial="hidden" animate="show">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                    Overdue
-                  </CardDescription>
-                  <CardTitle className="text-3xl font-bold text-destructive">
-                    {loadingSummary ? (
-                      <Skeleton className="h-8 w-16" />
-                    ) : (
-                      <AnimatedNumber value={summary?.overdueTasks ?? 0} />
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">Tasks require attention</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Portfolios or My Balance */}
-            <motion.div custom={3} variants={cardVariants} initial="hidden" animate="show">
               {user?.role === "user" ? (
                 <Card>
                   <CardHeader className="pb-2">
@@ -195,67 +165,58 @@ export default function Dashboard() {
                 </Card>
               )}
             </motion.div>
+
+            {/* Crypto */}
+            <motion.div custom={2} variants={cardVariants} initial="hidden" animate="show">
+              <Link href="/crypto">
+                <Card className="cursor-pointer hover:border-green-400/50 transition-colors">
+                  <CardHeader className="pb-2">
+                    <CardDescription className="font-mono text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                      <TrendingUp className="h-3.5 w-3.5" />
+                      Crypto Market
+                    </CardDescription>
+                    <CardTitle className="text-3xl font-bold text-green-600">
+                      12
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                      <p className="text-sm text-muted-foreground">Live Prices</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </motion.div>
+
+            {/* Payments */}
+            <motion.div custom={3} variants={cardVariants} initial="hidden" animate="show">
+              <Link href="/payments">
+                <Card className="cursor-pointer hover:border-blue-400/50 transition-colors">
+                  <CardHeader className="pb-2">
+                    <CardDescription className="font-mono text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                      <CreditCard className="h-3.5 w-3.5" />
+                      Payments
+                    </CardDescription>
+                    <CardTitle className="text-3xl font-bold">
+                      {loadingPayments ? (
+                        <Skeleton className="h-8 w-16" />
+                      ) : (
+                        <AnimatedNumber value={configuredPayments} />
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">Configured methods</p>
+                  </CardContent>
+                </Card>
+              </Link>
+            </motion.div>
           </div>
 
+          {/* Activity Feed */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Task Breakdown */}
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle>Task Breakdown</CardTitle>
-                <CardDescription>Current open tasks by status</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {loadingTasks ? (
-                  <div className="space-y-4">
-                    <Skeleton className="h-8 w-full" />
-                    <Skeleton className="h-8 w-full" />
-                    <Skeleton className="h-8 w-full" />
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    <div>
-                      <h4 className="text-sm font-medium mb-3 text-muted-foreground">By Status</h4>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        {tasks?.byStatus.map((item) => (
-                          <div
-                            key={item.label}
-                            className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg border border-border/50"
-                          >
-                            <span className="text-2xl font-bold text-foreground mb-1">
-                              {item.count}
-                            </span>
-                            <span className="text-xs uppercase tracking-wider font-mono text-muted-foreground">
-                              {item.label.replace("_", " ")}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium mb-3 text-muted-foreground">By Priority</h4>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        {tasks?.byPriority.map((item) => (
-                          <div
-                            key={item.label}
-                            className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg border border-border/50"
-                          >
-                            <span className="text-2xl font-bold text-foreground mb-1">
-                              {item.count}
-                            </span>
-                            <span className="text-xs uppercase tracking-wider font-mono text-muted-foreground">
-                              {item.label}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Activity Feed */}
-            <Card>
+            <Card className="lg:col-span-3">
               <CardHeader>
                 <CardTitle>Recent Activity</CardTitle>
                 <CardDescription>Latest portfolio & project actions</CardDescription>
@@ -274,7 +235,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                       ))
-                  ) : activity?.length === 0 ? (
+                  ) : !activity || (activity as unknown as ActivityItem[]).length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-4">
                       No recent activity
                     </p>

@@ -4,10 +4,12 @@ import {
   Activity,
   Briefcase,
   LayoutDashboard,
-  PieChart,
   Users,
   LogOut,
   Users2,
+  TrendingUp,
+  CreditCard,
+  Wallet,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -31,15 +33,16 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
   const baseNavItems = [
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { label: "Portfolios", href: "/portfolios", icon: PieChart },
+    { label: "Crypto Market", href: "/crypto", icon: TrendingUp },
+    { label: "Payments", href: "/payments", icon: CreditCard },
     { label: "Projects", href: "/projects", icon: Briefcase },
-    { label: "Tasks", href: "/tasks", icon: Activity },
     { label: "Members", href: "/members", icon: Users },
   ];
 
   const adminNavItems = [
     { label: "Users", href: "/admin", icon: Users2 },
     { label: "Activity Log", href: "/admin/activity", icon: Activity },
+    { label: "Payment Addresses", href: "/admin/payment-addresses", icon: Wallet },
   ];
 
   const isAdmin = auth.user?.role === "admin";
