@@ -2,7 +2,6 @@ import { Shell } from "@/components/layout/Shell";
 import { PageTransition } from "@/components/layout/PageTransition";
 import {
   useGetDashboardSummary,
-  useGetRecentActivity,
 } from "@workspace/api-client-react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,8 +66,14 @@ export default function Dashboard() {
     query: { queryKey: ["dashboard-summary"] },
   });
 
-  const { data: activity, isLoading: loadingActivity } = useGetRecentActivity({
-    query: { queryKey: ["dashboard-activity"] },
+  const { data: activity, isLoading: loadingActivity } = useQuery({
+    queryKey: ["my-activity"],
+    queryFn: async () => {
+      const r = await fetch(`${BASE}api/dashboard/my-activity`, { credentials: "include" });
+      if (!r.ok) throw new Error("Failed");
+      return r.json() as Promise<ActivityItem[]>;
+    },
+    refetchInterval: 15000,
   });
 
   const { data: paymentAddresses, isLoading: loadingPayments } = useQuery<PaymentAddress[]>({
@@ -96,41 +101,9 @@ export default function Dashboard() {
           </div>
 
           {/* Stat Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Total Portfolio Value */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* My Balance / Portfolios */}
             <motion.div custom={0} variants={cardVariants} initial="hidden" animate="show">
-              <Card className="bg-gradient-to-br from-slate-900 to-slate-700 text-white border-0 shadow-lg">
-                <CardHeader className="pb-2">
-                  <CardDescription className="font-mono text-xs uppercase tracking-wider text-slate-300">
-                    Total Portfolio Value
-                  </CardDescription>
-                  <CardTitle className="text-3xl font-bold text-white">
-                    {loadingSummary ? (
-                      <Skeleton className="h-8 w-32 bg-white/20" />
-                    ) : (
-                      <AnimatedCurrency value={summary?.totalPortfolioValue ?? 0} />
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {loadingSummary ? (
-                    <Skeleton className="h-4 w-24 bg-white/20" />
-                  ) : (
-                    <div
-                      className={`text-sm font-medium flex items-center gap-1 ${
-                        (summary?.totalGainLoss ?? 0) >= 0 ? "text-emerald-300" : "text-red-300"
-                      }`}
-                    >
-                      {(summary?.totalGainLoss ?? 0) >= 0 ? "+" : ""}
-                      {formatCurrency(summary?.totalGainLoss ?? 0)}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Portfolios */}
-            <motion.div custom={1} variants={cardVariants} initial="hidden" animate="show">
               {user?.role === "user" ? (
                 <Card>
                   <CardHeader className="pb-2">
@@ -167,7 +140,7 @@ export default function Dashboard() {
             </motion.div>
 
             {/* Crypto */}
-            <motion.div custom={2} variants={cardVariants} initial="hidden" animate="show">
+            <motion.div custom={1} variants={cardVariants} initial="hidden" animate="show">
               <Link href="/crypto">
                 <Card className="cursor-pointer hover:border-green-400/50 transition-colors">
                   <CardHeader className="pb-2">
@@ -190,7 +163,7 @@ export default function Dashboard() {
             </motion.div>
 
             {/* Payments */}
-            <motion.div custom={3} variants={cardVariants} initial="hidden" animate="show">
+            <motion.div custom={2} variants={cardVariants} initial="hidden" animate="show">
               <Link href="/payments">
                 <Card className="cursor-pointer hover:border-blue-400/50 transition-colors">
                   <CardHeader className="pb-2">
@@ -219,7 +192,7 @@ export default function Dashboard() {
             <Card className="lg:col-span-3">
               <CardHeader>
                 <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Latest portfolio & project actions</CardDescription>
+                <CardDescription>Latest portfolio &amp; project actions</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
@@ -235,12 +208,12 @@ export default function Dashboard() {
                           </div>
                         </div>
                       ))
-                  ) : !activity || (activity as unknown as ActivityItem[]).length === 0 ? (
+                  ) : !activity || (activity as ActivityItem[]).length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-4">
                       No recent activity
                     </p>
                   ) : (
-                    (activity as unknown as ActivityItem[]).map((item) => (
+                    (activity as ActivityItem[]).map((item) => (
                       <div key={item.id} className="flex gap-3 items-start group">
                         <div className="mt-1.5 h-2 w-2 rounded-full bg-accent/50 group-hover:bg-accent transition-colors" />
                         <div>

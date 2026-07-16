@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Shell } from "@/components/layout/Shell";
 import { PageTransition } from "@/components/layout/PageTransition";
-import { LogIn, UserPlus, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { LogIn, UserPlus, TrendingUp, TrendingDown, DollarSign, Banknote } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
 
@@ -10,7 +10,7 @@ const BASE = import.meta.env.BASE_URL;
 
 interface ActivityEntry {
   id: number;
-  type: "login" | "signup" | "balance_increase" | "balance_decrease" | "balance_set";
+  type: "login" | "signup" | "balance_increase" | "balance_decrease" | "balance_set" | "payment_submitted";
   metadata: Record<string, any>;
   createdAt: string;
   userId: number;
@@ -63,6 +63,13 @@ const typeConfig: Record<
     dotColor: "bg-purple-500",
     label: (meta) =>
       `balance set to ${formatCurrency(meta?.amount ?? 0)}${meta?.adminName ? ` (admin: ${meta.adminName})` : ""}`,
+  },
+  payment_submitted: {
+    icon: Banknote,
+    color: "text-cyan-500",
+    dotColor: "bg-cyan-500",
+    label: (meta) =>
+      `submitted a payment of $${meta?.amount ?? 0} via ${meta?.method ?? "unknown"}`,
   },
 };
 

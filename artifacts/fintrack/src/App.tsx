@@ -5,14 +5,12 @@ import Dashboard from '@/pages/Dashboard';
 import Crypto from '@/pages/Crypto';
 import CryptoDetail from '@/pages/CryptoDetail';
 import Payments from '@/pages/Payments';
-import Projects from '@/pages/Projects';
-import ProjectDetail from '@/pages/ProjectDetail';
-import Members from '@/pages/Members';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import AdminUsers from '@/pages/admin/Users';
 import ActivityLog from '@/pages/admin/ActivityLog';
 import PaymentAddresses from '@/pages/admin/PaymentAddresses';
+import Members from '@/pages/Members';
 import { Route, Switch, Router as WouterRouter, Redirect, useLocation } from 'wouter';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { Toaster } from 'sonner';
@@ -89,15 +87,6 @@ function Router() {
       <Route path="/payments">
         <ProtectedRoute component={Payments} />
       </Route>
-      <Route path="/projects">
-        <ProtectedRoute component={Projects} />
-      </Route>
-      <Route path="/projects/:id">
-        <ProtectedRoute component={ProjectDetail} />
-      </Route>
-      <Route path="/members">
-        <ProtectedRoute component={Members} />
-      </Route>
 
       {/* Admin-only routes */}
       <Route path="/admin">
@@ -108,6 +97,9 @@ function Router() {
       </Route>
       <Route path="/admin/payment-addresses">
         <ProtectedRoute component={PaymentAddresses} adminOnly />
+      </Route>
+      <Route path="/members">
+        <ProtectedRoute component={Members} adminOnly />
       </Route>
 
       <Route component={NotFound} />

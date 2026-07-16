@@ -2,7 +2,6 @@ import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import {
   Activity,
-  Briefcase,
   LayoutDashboard,
   Users,
   LogOut,
@@ -35,14 +34,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { label: "Crypto Market", href: "/crypto", icon: TrendingUp },
     { label: "Payments", href: "/payments", icon: CreditCard },
-    { label: "Projects", href: "/projects", icon: Briefcase },
-    { label: "Members", href: "/members", icon: Users },
   ];
 
   const adminNavItems = [
     { label: "Users", href: "/admin", icon: Users2 },
     { label: "Activity Log", href: "/admin/activity", icon: Activity },
     { label: "Payment Addresses", href: "/admin/payment-addresses", icon: Wallet },
+    { label: "Members", href: "/members", icon: Users },
   ];
 
   const isAdmin = auth.user?.role === "admin";

@@ -7,3 +7,4 @@ export * from "./members";
 export * from "./users";
 export * from "./activityLogs";
 export * from "./paymentAddresses";
+export * from "./pendingPayments";

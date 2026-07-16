@@ -11,6 +11,7 @@ import authRouter from "./auth";
 import adminRouter from "./admin";
 import cryptoRouter from "./crypto";
 import paymentAddressesRouter from "./paymentAddresses";
+import paymentsRouter from "./payments";
 
 const router: IRouter = Router();
 
@@ -19,6 +20,7 @@ router.use(authRouter);
 router.use(adminRouter);
 router.use(cryptoRouter);
 router.use(paymentAddressesRouter);
+router.use(paymentsRouter);
 router.use(portfoliosRouter);
 router.use(holdingsRouter);
 router.use(transactionsRouter);
